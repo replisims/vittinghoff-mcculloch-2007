@@ -1,0 +1,221 @@
+---
+title: "Simulation Vittinghof & McCulloch (2007): Data Generating Mechanism"
+output: none
+---
+
+
+```{r echo=FALSE}
+library(MASS)
+library(dplyr)
+library(magrittr)
+```
+
+```{r data generating model - continue predictoren}
+
+#### Function to generate the data
+dgm_cont_primarypred <- function(npredictors, nobs, pairwise_correlation, 
+                                 beta1, aggregate_effect, intercept, 
+                                 variance_primary_predictor, multiple_correlation,
+                                 nevents, nnonevents){
+
+#### Some settings
+  
+  #covariates
+  n_covariates <- (npredictors-1)
+  names_covariates <- c()
+  for (i in 1:(n_covariates)){names_covariates[i] <- paste0("covariate", i)} 
+  
+  #aggregate effect and beta2
+    beta2 <- aggregate_effect/n_covariates
+  
+#### Create X
+  
+  #Covariance matrix
+  mu <- rep(0, npredictors)    
+  Sigma <- matrix(pairwise_correlation, nrow = npredictors, ncol = npredictors)
+  diag(Sigma) <- 1
+  Sigma[1,1] <- variance_primary_predictor #variance primary predictor
+  Sigma[1,2:4] <- multiple_correlation[1] # multiple correlation with primary predictor
+  Sigma[2:4,1] <- multiple_correlation[1]
+  
+
+  #Create independent variables
+  X <- mvrnorm(nobs, mu = mu, Sigma = Sigma)
+
+  ### Matrix names X
+  colnames(X) <- c("primarypredictor", names_covariates)
+  
+  X <- as.data.frame(X)
+  
+
+  ##### Create Y
+  formula <- paste0("intercept + X$primarypredictor * beta1 + ",
+                             paste(paste0("X$",names_covariates) ,"* beta2", collapse = "+"))
+  
+  Y <- rbinom(nobs, size = 1, prob = plogis(eval(parse(text=formula))))
+  
+  #### Create dataset
+
+  data <- cbind(X, Y)
+
+  sample_n(data[data$Y == 1,], nevents, replace = FALSE) -> events
+  sample_n(data[data$Y == 0,], nnonevents, replace = FALSE) -> nonevents
+  
+  data <- rbind(events, nonevents)
+  
+  list_simulation <- list()
+  
+  
+  list_simulation[[1]] <- Sigma
+  list_simulation[[2]] <- data
+  
+  return(list_simulation)
+
+}
+
+
+check <- dgm_cont_primarypred(npredictors = 4, nobs = 5000, pairwise_correlation = 0.25,
+                              beta1 = 0.5, aggregate_effect = 0.1, intercept = 0.5,
+                              variance_primary_predictor = 0.16, multiple_correlation = 0.1,
+                              nevents = 256, nnonevents = 768)
+
+
+#1024 observations
+#256 events, 768 nonevents
+
+check[[1]] # Covariance matrix
+table(check[[2]]$Y) # Event distribution
+
+```
+
+```{r data generating model - test continuous predictors}
+x_variables <- colnames(check[[2]][, colnames(check[[2]]) != 'Y'])
+
+glm(paste(c("Y ~", x_variables ), collapse = "+") , family = binomial, data = check[[2]])
+
+```
+
+```{r data generating model - attempt to create binary primary predictor}
+#### Settings to create binary primary predictor
+npredictors = 4
+nobs = 10000 #to check correlation
+intercept = 0.5
+beta2 = 0
+ n_covariates <- (npredictors-1)
+  names_covariates <- c()
+  for (i in 1:(n_covariates)){names_covariates[i] <- paste0("covariate", i)} 
+
+  
+### Create X
+  
+  #Covariance matrix
+  mu <- rep(0, (npredictors-1))    
+  Sigma <- matrix(pairwise_correlation, nrow = npredictors-1, ncol = npredictors-1)
+  diag(Sigma) <- 1
+
+  # Create based on logres multiple_correlation_covariates 
+
+  #Create independent variables
+  X_cov <- mvrnorm(nobs, mu = mu, Sigma = Sigma)
+
+  # Matrix names X
+  colnames(X_cov) <- c(names_covariates)
+  
+  X_cov <- as.data.frame(X_cov)
+  
+  ## Guess betavalues for prevalence of 0.1, 0.25, 0.5 and correlations with covariates of 0, 0.25, 0.5 and 0.75
+  
+  #For correlation with pp and cov --> 0
+  print("cor = 0.0")
+  beta_pp = 0
+  
+  
+    ### Create primary predictor
+  formula <- paste0("intercept + ",
+                             paste(paste0("X_cov$",names_covariates) ,"* beta_pp", collapse = "+"))
+  
+  primarypredictor <- rbinom(nobs, size = 1, prob = plogis(eval(parse(text=formula))))
+  
+  X = cbind (X_cov, primarypredictor)
+  
+#prevalence 
+  prevalence = nrow(X%>%filter(primarypredictor==1)) / nrow(X)
+  prevalence
+  
+#correlation
+  cor(X)
+  
+    #For correlation with pp and cov --> 0.25
+  print("cor = 0.25")
+  beta_pp = 0.40
+  
+  
+    ### Create primary predictor
+  formula <- paste0("intercept + ",
+                             paste(paste0("X_cov$",names_covariates) ,"* beta_pp", collapse = "+"))
+  
+  primarypredictor <- rbinom(nobs, size = 1, prob = plogis(eval(parse(text=formula))))
+  
+  X = cbind (X_cov, primarypredictor)
+  
+#prevalence 
+  prevalence = nrow(X%>%filter(primarypredictor==1)) / nrow(X)
+  prevalence
+  
+#correlation
+  cor(X)
+  
+      #For correlation with pp and cov --> 0.25
+  print("cor = 0.5")
+  beta_pp = 1.7
+  
+  
+    ### Create primary predictor
+  formula <- paste0("intercept + ",
+                             paste(paste0("X_cov$",names_covariates) ,"* beta_pp", collapse = "+"))
+  
+  primarypredictor <- rbinom(nobs, size = 1, prob = plogis(eval(parse(text=formula))))
+  
+  X = cbind (X_cov, primarypredictor)
+  
+#prevalence 
+  prevalence = nrow(X%>%filter(primarypredictor==1)) / nrow(X)
+  prevalence
+  
+#correlation
+  cor(X)
+  
+      #For correlation with pp and cov --> 0.25
+  print("cor = 0.75")
+  beta_pp = 10000
+  
+  intercept = 0.3
+  ### Create primary predictor
+  formula <- paste0("intercept + ",
+                             paste(paste0("X_cov$",names_covariates) ,"* beta_pp", collapse = "+"))
+  
+  primarypredictor <- rbinom(nobs, size = 1, prob = plogis(eval(parse(text=formula))))
+  
+  X = cbind (X_cov, primarypredictor)
+  
+#prevalence 
+  prevalence = nrow(X%>%filter(primarypredictor==1)) / nrow(X)
+  prevalence
+  
+#correlation
+  cor(X)
+  
+  ### Matrix names X
+  colnames(X) <- c(names_covariates, "primarypredictor")
+
+  ### Create primary predictor
+  formula <- paste0("intercept + X$primarypredictor * beta1 + ",
+                             paste(paste0("X$",names_covariates) ,"* beta2", collapse = "+"))
+  
+  Y <- rbinom(nobs, size = 1, prob = plogis(eval(parse(text=formula))))
+  
+#### Maak data
+
+  data <- cbind(X, Y)
+```
+

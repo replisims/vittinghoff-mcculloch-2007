@@ -1,0 +1,67 @@
+---
+title: "Simulation Vittinghof & McCulloch (2007): Factorial"
+output: none
+---
+
+
+```{r echo=FALSE}
+library(MASS)
+library(dplyr)
+library(magrittr)
+```
+
+# Define scenarios
+```{r scenarios}
+### Scenarios
+EPV <- seq(2,16)
+npredictors <- c(2,4,8,16)
+nobs <- c(128, 256, 512, 1024)
+betaprimary <- c(0, log(1.5), log(2), log(4))
+pairwise_correlation <- 0.25
+
+#Specific for binary primary predictor
+expected_prevalence <- c(0.1, 0.25, 0.5)
+multiple_correlation_covariates <- c(0,0.25,0.5,0.75)
+
+#Specific for continuous primary predictor
+variance_primary_predictor <- 0.16
+multiple_correlation <- c(0,0.1,0.25, 0.5, 0.9)
+```
+
+```{r grid}
+scenarios_binary <- expand.grid(npredictors = npredictors,
+                                EPV = EPV,
+                                nobs = nobs,
+                                betaprimary = betaprimary,
+                                pairwise_correlation = pairwise_correlation,
+                                #Specific for binary primary predictor
+                                expected_prevalence = expected_prevalence,
+                                multiple_correlation_covariates = multiple_correlation_covariates)
+
+### "The factorial omitted extreme cases with outcome prevalence of greater than 50 percent".
+scenarios_binary %<>%
+  mutate(nevents = npredictors * EPV) %>%
+  mutate(nnonevents = nobs - nevents) %>%
+  mutate(outcomeprevalence = nevents /nobs) %>%
+  filter(outcomeprevalence <= 0.5)
+  
+scenarios_continuous <- expand.grid(npredictors = npredictors,
+                                EPV = EPV,
+                                nobs = nobs,
+                                betaprimary = betaprimary,
+                                pairwise_correlation = pairwise_correlation,
+                                #Specific for continuous primary predictor
+                                variance_primary_predictor = variance_primary_predictor,
+                                multiple_correlation = multiple_correlation)
+
+### "The factorial omitted extreme cases with outcome prevalence of greater than 50 percent".
+scenarios_continuous %<>%
+  mutate(nevents = npredictors * EPV) %>%
+  mutate(nnonevents = nobs - nevents) %>%
+  mutate(outcomeprevalence = nevents /nobs) %>%
+  filter(outcomeprevalence <= 0.5)
+
+## Count scenarios
+nrow(scenarios_binary)
+nrow(scenarios_continuous)
+```
