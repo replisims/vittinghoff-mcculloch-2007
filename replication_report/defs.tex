@@ -1,0 +1,104 @@
+% Author: Karol KozioL
+% License: GPL-3
+% Modified by: Sarah Wagner & Anna Lohmann
+
+% % % packages -----------------------------------------------------------------------------------
+\usepackage{amsmath}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{calc}
+\usepackage{eso-pic}
+\usepackage{fancyhdr}
+\usepackage{fontspec}
+\usepackage[left = 2.5cm, right = 2.5cm, top = 1.2cm, bottom = 1.2cm, includeheadfoot]{geometry}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage{lastpage}
+\usepackage{multirow}
+\usepackage{tabularx} 
+\usepackage{tikz}
+\usepackage{titlesec}
+\usepackage{xcolor, colortbl}
+\usepackage{url} 
+\usepackage[hidelinks]{hyperref} 
+\usepackage{pmboxdraw}
+\usepackage{placeins}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{lscape}
+%\usepackage{verbatim}
+%\makeatletter
+%\def\verbatim@font{\scriptsize\ttfamily}
+%\makeatother
+%\RequirePackage[normalem]{ulem} %DIF PREAMBLE
+%\RequirePackage{color}
+%\providecommand{\tightlist}{%
+%	\setlength{\itemsep}{0pt}\setlength{\parskip{0pt}}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+% % % settings -----------------------------------------------------------------------------------
+
+% % custom colors
+\definecolor{iblue}{HTML}{\iblue}
+\definecolor{igray}{HTML}{\igray}
+
+% definition of pagename
+\newcommand\pagename{Page}
+
+% % fonts 
+\defaultfontfeatures{Mapping = tex-text}
+\setmainfont[BoldFont = Lato-Bold.ttf, ItalicFont = Lato-Italic.ttf, BoldItalicFont = Lato-BoldItalic.ttf]{Lato-Regular.ttf}
+\newfontfamily\headingfont[ItalicFont = Lato-BlackItalic.ttf]{Lato-Black.ttf}
+%\setmonofont{Ubuntu Mono}
+\setmonofont[Scale=0.90,
+BoldFont=UbuntuMono-Bold.ttf,
+%ItalicFont=UbuntuMono-Italic.ttf,
+BoldItalicFont=UbuntuMono-BoldItalic.ttf
+]{UbuntuMono-Regular.ttf}
+
+\makeatletter
+\def\verbatim@font{\linespread{1}\normalfont\ttfamily}
+\makeatother
+
+% % sections
+\titleformat{\section}{\color{iblue}\headingfont\Large\bfseries}{\thesection}{1em}{}[\titlerule]
+\titleformat{\subsection}{\color{iblue}\headingfont\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\color{iblue}\headingfont\bfseries}{\thesubsubsection}{1em}{}
+
+% % misc
+\setlength{\parindent}{0em} 
+\linespread{1.5}
+\raggedright
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+
+
+\makeatletter
+
+% pagestyle titlepage
+\fancypagestyle{customtitle}{
+	\lhead{}
+	\chead{}
+	\rhead{}
+	\makeatother
+	\lfoot{}
+	\cfoot{}
+	\rfoot{}
+}
+
+
+
+
+% % % header and footer ---------------------------------------------------------------------------
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+\makeatother
+\newlength{\myheight}
+\lfoot{}
+\cfoot{}
+\rfoot{\pagename~\thepage \hspace{1pt} / \pageref{LastPage}}
+\renewcommand\headrulewidth{0pt}
+\renewcommand\footrulewidth{0pt}
+
+
